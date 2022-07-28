@@ -19,9 +19,9 @@ namespace SchoolAPI.Services.Implements
 		public Student Create(Student t)
 		{
 			trainContext.Add(t);
-			int id = trainContext.SaveChanges();
+			trainContext.SaveChanges();
 
-			return GetById(id);
+			return t;
 		}
 
 		public List<Student> GetAll()
