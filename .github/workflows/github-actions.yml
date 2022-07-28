@@ -1,0 +1,71 @@
+name: GitHub Actions
+on: [push]
+jobs:
+  build_artifact:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet-version: ['6.0.x' ]
+    outputs:
+      projectname: ${{ steps.projectname.outputs.projectname }}
+      projectversion: ${{ steps.projectversion.outputs.projectversion }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+      - name: Test
+        run: dotnet test --no-restore --verbosity normal
+
+      - id: projectname
+        run: echo "::set-output name=projectname::school-api"
+      - id: projectversion
+        run: echo "::set-output name=projectversion::0.0.1"
+
+  build_image:
+    runs-on: ubuntu-latest
+    needs: build_artifact
+    steps:
+      - run: echo "Image tag ${{needs.build_artifact.outputs.projectname}}:${{needs.build_artifact.outputs.projectversion}}"
+      - name: Checkout 
+        uses: actions/checkout@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Build and push
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/${{needs.build_artifact.outputs.projectname}}:${{needs.build_artifact.outputs.projectversion}}
+      
+  check_vulnerability:
+    runs-on: ubuntu-latest
+    needs: ["build_artifact", "build_image"]
+    steps:
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: docker.io/${{ secrets.DOCKER_HUB_USERNAME }}/${{needs.build_artifact.outputs.projectname}}:${{needs.build_artifact.outputs.projectversion}}
+          format: 'table'
+          # output: 'trivy-results.sarif'
+          # exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+      # For organization only    
+      # - name: Upload Trivy scan results to GitHub Security tab
+      #   uses: github/codeql-action/upload-sarif@v2
+      #   if: always()
+      #   with:
+      #     sarif_file: 'trivy-results.sarif'
