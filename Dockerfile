@@ -7,7 +7,11 @@ WORKDIR /opt/dotnetcore
 
 ADD . .
 
-RUN ["rm", "global.json"]
+# RUN ["rm", "global.json"]
+
+RUN ["mv", "appsettings.Docker.json", "appsettings.json"]
+
+RUN ["dotnet", "restore"]
 
 RUN ["dotnet", "publish", "-c", "Release"]
 
@@ -22,9 +26,9 @@ USER root
 # RUN apt install -y curl
 # RUN apt install -y lsof
 
-RUN ["mkdir", "-p", "/opt/app-root/publish"]
+RUN ["mkdir", "-p", "/opt/app-root"]
 
-WORKDIR /opt/app-root/publish
+WORKDIR /opt/app-root
 
 EXPOSE 8000
 
