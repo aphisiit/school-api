@@ -1,0 +1,19 @@
+FROM mcr.microsoft.com/dotnet/sdk:6.0.302-alpine3.15-amd64
+USER root
+
+RUN ["mkdir", "-p", "/opt/dotnetcore"]
+
+WORKDIR /opt/dotnetcore
+
+ADD . .
+
+RUN ["mv", "appsettings.Docker.json", "appsettings.json"]
+
+RUN ["dotnet", "tool", "install", "--global", "dotnet-ef", "--version", "6.0.7"]
+
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+## TODO: The name 'InitialCreate' is used by an existing migration.
+# RUN ["dotnet", "ef", "migrations", "add", "InitialCreate"]
+
+CMD ["dotnet", "ef", "database", "update"]

@@ -1,0 +1,104 @@
+services:
+  school-database:
+    container_name: school-database
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    restart: always
+    image: postgres:latest
+    # image: postgres:12.10
+    environment:
+      - TZ=Asia/Bangkok
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DB=School
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "kong"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s 
+    # ports:
+      # - 5432:5432
+    networks:
+      - school-network
+  
+  pg-admin:
+    container_name: pg-admin
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    restart: always
+    image: dpage/pgadmin4
+    environment:
+      - TZ=Asia/Bangkok
+      - PGADMIN_DEFAULT_EMAIL=admin@mail.com
+      - PGADMIN_DEFAULT_PASSWORD=P@ssw0rd
+    ports:
+      - 9000:80
+    networks:
+      - school-network
+
+  school-api-prepare:
+    container_name: school-api-prepare
+    depends_on:
+      school-database:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    # restart: on-failure:1
+    # image: aphisiit/school-api
+    build:
+      context: .
+      dockerfile: Dockerfile-Prepare
+    networks:
+      - school-network
+
+  school-api:
+    container_name: school-api
+    depends_on:
+      school-database:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    restart: always
+    # image: aphisiit/school-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    healthcheck:
+      test: wget --spider http://localhost:8000/health
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 1m
+    ports:
+      - 8000:8000
+    networks:
+      - school-network
+
+networks:
+  school-network:
+    driver: bridge
