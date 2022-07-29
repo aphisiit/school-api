@@ -44,6 +44,22 @@ namespace SchoolAPI.Controllers
 		{
 			return service.GetAllFirstName();
 		}
+
+		[HttpPut("{id}")]
+		[Consumes("application/json")]
+		[Produces("application/json")]
+		public Student Update(int id, Student student)
+		{
+			return service.Update(id, student);
+		}
+
+		[HttpPatch("{id}")]
+		[Consumes("application/json")]
+		[Produces("application/json")]
+		public Student UpdateSomeFields(int id, Student student)
+		{
+			return service.UpdateSomeFields(id, student);
+		}
 	}
 }
 

@@ -7,6 +7,8 @@ namespace SchoolAPI.Services
 		List<T> GetAll();
 		T GetById(int id);
 		IDictionary<string, string> GetAllFirstName();
+		T Update(int id, T t);
+		T UpdateSomeFields(int d, T t);
 	}
 }
 

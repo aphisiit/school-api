@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 using SchoolAPI.Contexts;
 using SchoolAPI.Models;
 
@@ -48,6 +49,42 @@ namespace SchoolAPI.Services.Implements
 		public Student GetById(int id)
 		{
 			return trainContext.Students.Where(x => x.ID == id).FirstOrDefault();
+		}
+
+		public Student Update(int id, Student t)
+		{
+			t.ID = id;
+			trainContext.Entry(t).State = EntityState.Modified;
+			trainContext.SaveChanges();
+
+			return t;
+		}
+
+		public Student UpdateSomeFields(int id, Student s)
+		{
+			var data = GetById(id);
+
+			if(s.FisrtName != null && s.FisrtName.Length != 0)
+			{
+				data.FisrtName = s.FisrtName;
+			}
+			if (s.LastName != null && s.LastName.Length != 0)
+			{
+				data.LastName = s.LastName;
+			}
+			if (s.Age != null)
+			{
+				data.Age = s.Age;
+			}
+			if (s.Sex != null && s.Sex.ToString() != "")
+			{
+				data.Sex = s.Sex;
+			}
+
+			trainContext.Entry(data).State = EntityState.Modified;
+			trainContext.SaveChanges();
+
+			return data;
 		}
 	}
 }
