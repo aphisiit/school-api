@@ -28,6 +28,8 @@
     <None Remove="Microsoft.EntityFrameworkCore.Design" />
     <None Remove="Services\" />
     <None Remove="Services\Implements\" />
+    <None Remove="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
+    <None Remove="AutoMapper" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Contexts\" />
