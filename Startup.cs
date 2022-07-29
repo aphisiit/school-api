@@ -53,6 +53,12 @@ namespace SchoolAPI
             });
 
             services.AddHealthChecks();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigin",
+                    builde => builde.WithOrigins("*").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -74,6 +80,8 @@ namespace SchoolAPI
                 endpoints.MapControllers();
                 endpoints.MapHealthChecks("/health");
             });
+
+            app.UseCors("AllowSpecificOrigin");
         }
     }
 }
