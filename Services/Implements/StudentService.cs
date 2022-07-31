@@ -25,6 +25,51 @@ namespace SchoolAPI.Services.Implements
 			return t;
 		}
 
+		public IDictionary<string, string> Delete(int id)
+		{
+			Dictionary<string, string> map = new Dictionary<string, string>();
+			try
+			{
+				Student student = GetById(id);
+				trainContext.Remove(student);
+				trainContext.SaveChanges();
+				map["message"] = "delete successful";
+			}
+			catch(Exception e)
+			{
+				map["message"] = "delete unsuccessful";
+				map["error-message"] = e.Message.ToString();
+			}
+			return map;
+		}
+
+		public List<Student> FindByFisrtNameAndLastName(string str, int page, int limit)
+		{
+			int skip = page;
+			int size = limit;
+			List<Student> students = trainContext.Students.Where(x =>
+				EF.Functions.Like(x.FisrtName.ToLower(), $"%{str}%")
+				||
+				EF.Functions.Like(x.LastName.ToLower(), $"%{str}%")
+			).Skip(skip - 1).Take(size).ToList();
+
+			return students;
+		}
+
+		public IDictionary<string, int> FindByFisrtNameAndLastNameSize(string str)
+		{
+			int count = trainContext.Students.Where(x =>
+				   EF.Functions.Like(x.FisrtName.ToLower(), $"%{str}%")
+				   ||
+				   EF.Functions.Like(x.LastName.ToLower(), $"%{str}%")
+			).Count();
+
+			IDictionary<string, int> map = new Dictionary<string, int>();
+			map["count"] = count;
+
+			return map;
+		}
+
 		public List<Student> GetAll()
 		{
 			return trainContext.Students.ToList();
