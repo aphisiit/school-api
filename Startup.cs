@@ -1,10 +1,14 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.OpenApi.Models;
+using Npgsql;
 using SchoolAPI.Contexts;
 using SchoolAPI.Models;
 using SchoolAPI.Services;
 using SchoolAPI.Services.Implements;
+using SqlKata.Compilers;
+using SqlKata.Execution;
 
 namespace SchoolAPI
 {
@@ -25,6 +29,7 @@ namespace SchoolAPI
 
             services.AddControllers();
             services.AddScoped<IPersonService<Student>, StudentService>();
+            services.AddScoped<IPersonService<Teacher>, TeacherService>();
 
             services.AddTransient<CircleService>();
             services.AddTransient<SquareService>();
@@ -47,6 +52,22 @@ namespace SchoolAPI
                 options.UseNpgsql(Configuration.GetConnectionString("Postgresql"));
             });
 
+            services.AddTransient(e =>
+            {
+                var connStr = Configuration.GetConnectionString("Postgresql");
+                var connection = new NpgsqlConnection(connStr);
+
+                var compiler = new PostgresCompiler();
+                return new QueryFactory(connection, compiler)
+                {
+                    //Logger = compiled =>
+                    //{
+                        //logger.LogInformation(compiled.RawSql);
+                        //System.Diagnostics.Debug.WriteLine(compiled.ToString());
+                    //}
+                };
+            });
+            
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "SimpleDotNET5", Version = "v1" });
@@ -57,7 +78,7 @@ namespace SchoolAPI
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowSpecificOrigin",
-                    builde => builde.WithOrigins("*").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
+                     builde => builde.WithOrigins("http://localhost:8080").AllowAnyMethod().AllowAnyHeader().AllowCredentials());
             });
         }
 
@@ -78,10 +99,11 @@ namespace SchoolAPI
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
-                endpoints.MapHealthChecks("/health");
+				endpoints.MapHealthChecks("/health");
             });
 
             app.UseCors("AllowSpecificOrigin");
+            //app.UseCors("AllowSpecificCredentials");
         }
     }
 }

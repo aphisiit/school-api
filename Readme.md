@@ -24,3 +24,6 @@ Build file will be in bin/Release/net6.0/
 $ docker build -t school-api .
 $ docker run -p 8000:8000 --name school-api -d school-api:latest
 ```
+
+## Relate Project
+- [school-ui](https://github.com/aphisiit/school-ui)

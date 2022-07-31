@@ -1,12 +1,14 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using SchoolAPI.Models;
 using SchoolAPI.Services;
 
 namespace SchoolAPI.Controllers
 {
 	[ApiController]
-	[Route("[controller]")]
+	[Route("api/[controller]")]
 	public class StudentController : ControllerBase
 	{
 		private IPersonService<Student> service;
@@ -59,6 +61,27 @@ namespace SchoolAPI.Controllers
 		public Student UpdateSomeFields(int id, Student student)
 		{
 			return service.UpdateSomeFields(id, student);
+		}
+
+		[HttpGet("findByFirstNameAndLastName")]
+		[Produces("application/json")]
+		public List<Student> FindByFirstNameAndLastName(string? str, int page = 1, int limit = 10)
+		{
+			return service.FindByFisrtNameAndLastName(str, page, limit);
+		}
+
+		[HttpGet("findByFirstNameAndLastNameSize")]
+		[Produces("application/json")]
+		public IDictionary<string, int> FindByFirstNameAndLastName(string? str)
+		{
+			return service.FindByFisrtNameAndLastNameSize(str);
+		}
+
+		[HttpDelete("{id}")]
+		[Produces("application/json")]
+		public IDictionary<string, string> DeleteById(int id)
+		{
+			return service.Delete(id);
 		}
 	}
 }
