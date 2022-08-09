@@ -30,6 +30,7 @@ namespace SchoolAPI
             services.AddControllers();
             services.AddScoped<IPersonService<Student>, StudentService>();
             services.AddScoped<IPersonService<Teacher>, TeacherService>();
+            services.AddScoped<IJWTService, JWTService>();
 
             services.AddTransient<CircleService>();
             services.AddTransient<SquareService>();
